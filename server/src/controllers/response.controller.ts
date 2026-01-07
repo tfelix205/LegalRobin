@@ -1,9 +1,12 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../lib/prisma.js";
 
-const prisma = new PrismaClient();
+
 import type {Response, Request} from "express";
 
 export const respondToPost = async (req: Request, res: Response) => {
+  if (!req.user) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
   const lawyer = await prisma.lawyerProfile.findUnique({
     where: { userId: req.user.id },
   });

@@ -1,7 +1,7 @@
-import { PrismaClient, Role } from "@prisma/client";
+import { prisma } from "../lib/prisma.js"; // instead of new PrismaClient()
+import { Role } from "@prisma/client";
 import jwt from "jsonwebtoken";
-import { hashPassword, comparePassword } from "../utils/hash";
-const prisma = new PrismaClient();
+import { hashPassword, comparePassword } from "../utils/hash.js";
 export const register = async (req, res) => {
     const { name, email, password, role } = req.body;
     const hashed = await hashPassword(password);

@@ -1,0 +1,153 @@
+### Legal Robin API Test Script
+### Use this with VS Code REST Client extension or copy to Postman
+
+@baseUrl = http://localhost:5000/api
+@token = {{login.response.body.token}}
+
+### Health Check
+GET http://localhost:5000/health
+
+###
+# 1. AUTHENTICATION
+###
+
+### Register a new user
+# @name register
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Test User",
+  "email": "test@example.com",
+  "password": "password123"
+}
+
+### Login
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "password123"
+}
+
+### Register an admin (for testing - change this in production!)
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Admin User",
+  "email": "admin@example.com",
+  "password": "admin123",
+  "role": "ADMIN"
+}
+
+###
+# 2. LEGAL POSTS
+###
+
+### Create a legal post (requires auth)
+POST {{baseUrl}}/posts
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "category": "Employment Law",
+  "description": "My employer has not paid my salary for 3 months. I have tried speaking to HR but they keep giving excuses. What legal actions can I take?"
+}
+
+### Get all posts
+GET {{baseUrl}}/posts
+
+### Get posts by category
+GET {{baseUrl}}/posts?category=Employment Law
+
+### Get posts by status
+GET {{baseUrl}}/posts?status=OPEN
+
+### Get single post by ID
+GET {{baseUrl}}/posts/POST_ID_HERE
+
+###
+# 3. LAWYER ACTIONS
+###
+
+### Apply as a lawyer
+POST {{baseUrl}}/lawyers/apply
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "specialization": "Employment and Labour Law",
+  "jurisdiction": "Lagos State, Nigeria",
+  "licenseUrl": "https://example.com/lawyer-license.pdf"
+}
+
+### Get lawyer profile
+GET {{baseUrl}}/lawyers/profile/USER_ID_HERE
+
+### Respond to a post (lawyer only, after approval)
+POST {{baseUrl}}/lawyers/respond/POST_ID_HERE
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "message": "Thank you for reaching out. Based on Nigerian labour laws, particularly the Labour Act, your employer is in violation of employment terms. Here are your options:\n\n1. File a complaint with the Ministry of Labour\n2. Consider mediation through the National Industrial Court\n3. Seek legal representation for wrongful termination if dismissed\n\nI recommend documenting all communication with your employer. Would you like to schedule a consultation?"
+}
+
+###
+# 4. ADMIN ACTIONS
+###
+
+### Get pending lawyer applications (admin only)
+GET {{baseUrl}}/admin/lawyers/pending
+Authorization: Bearer {{token}}
+
+### Approve lawyer application (admin only)
+POST {{baseUrl}}/admin/lawyers/LAWYER_PROFILE_ID/approve
+Authorization: Bearer {{token}}
+
+### Reject lawyer application (admin only)
+POST {{baseUrl}}/admin/lawyers/LAWYER_PROFILE_ID/reject
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "reason": "License document is not clear. Please resubmit with a clearer copy."
+}
+
+### Flag inappropriate post (admin only)
+POST {{baseUrl}}/admin/posts/POST_ID_HERE/flag
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "reason": "Contains inappropriate language"
+}
+
+###
+# 5. ERROR CASES (Testing)
+###
+
+### Try to create post without authentication
+POST {{baseUrl}}/posts
+Content-Type: application/json
+
+{
+  "category": "Test",
+  "description": "This should fail"
+}
+
+### Try to respond without being a lawyer
+POST {{baseUrl}}/lawyers/respond/POST_ID_HERE
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "message": "This should fail"
+}
+
+### Try admin endpoint without admin role
+GET {{baseUrl}}/admin/lawyers/pending
+Authorization: Bearer {{token}}

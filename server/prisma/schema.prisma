@@ -1,10 +1,9 @@
-generator client {
-  provider = "prisma-client-js"
-}
-
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
 }
 
 enum Role {
@@ -35,26 +34,49 @@ model User {
 
   lawyerProfile LawyerProfile?
   posts         LegalPost[]
+  responses     Response[]
 }
 
 model LawyerProfile {
-  id             String @id @default(uuid())
-  userId         String @unique
+  id             String             @id @default(uuid())
+  userId         String             @unique
   specialization String
   jurisdiction   String
   licenseUrl     String
   status         VerificationStatus @default(PENDING)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
 
-  user User @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model LegalPost {
-  id          String   @id @default(uuid())
+  id          String     @id @default(uuid())
   userId      String?
   category    String
   description String
   status      PostStatus @default(OPEN)
-  createdAt   DateTime @default(now())
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 
-  user User? @relation(fields: [userId], references: [id])
+  user      User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
+  responses Response[]
+
+  @@index([status])
+  @@index([category])
+}
+
+model Response {
+  id        String   @id @default(uuid())
+  postId    String
+  lawyerId  String
+  message   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  post   LegalPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  lawyer User      @relation(fields: [lawyerId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+  @@index([lawyerId])
 }

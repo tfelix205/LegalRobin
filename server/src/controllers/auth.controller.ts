@@ -1,9 +1,10 @@
-import { PrismaClient, Role } from "@prisma/client";
+import { prisma} from "../lib/prisma.js";  // instead of new PrismaClient()
+import { Role } from "@prisma/client";
+
 import jwt from "jsonwebtoken";
-import { hashPassword, comparePassword } from "../utils/hash";
+import { hashPassword, comparePassword } from "../utils/hash.js";
 import type {Response, Request} from "express";
 
-const prisma = new PrismaClient();
 
 export const register = async (req: Request, res: Response) => {
   const { name, email, password, role } = req.body;
@@ -22,7 +23,7 @@ export const register = async (req: Request, res: Response) => {
   res.json(user);
 };
 
-export const login = async (req, res) => {
+export const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
   const user = await prisma.user.findUnique({ where: { email } });

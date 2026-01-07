@@ -1,5 +1,5 @@
 import app from "./app.js";
 
-app.listen(5000, () => {
-  console.log("Legal Robin API running on port 5000");
+app.listen(9696, () => {
+  console.log("Legal Robin API running on port 9696");
 });
