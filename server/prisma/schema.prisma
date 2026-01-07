@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  LAWYER
+  ADMIN
+}
+
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum PostStatus {
+  OPEN
+  ANSWERED
+  FLAGGED
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+
+  lawyerProfile LawyerProfile?
+  posts         LegalPost[]
+}
+
+model LawyerProfile {
+  id             String @id @default(uuid())
+  userId         String @unique
+  specialization String
+  jurisdiction   String
+  licenseUrl     String
+  status         VerificationStatus @default(PENDING)
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model LegalPost {
+  id          String   @id @default(uuid())
+  userId      String?
+  category    String
+  description String
+  status      PostStatus @default(OPEN)
+  createdAt   DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+}
